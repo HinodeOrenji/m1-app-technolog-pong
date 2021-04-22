@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<body>
+</body>
+<script src="http://localhost:3000/game"></script>
+<script src="http://localhost:3000/gameDisplay"></script>
+<script src="http://localhost:3000/gameKeycode"></script>
+<script src="http://localhost:3000/gameControl"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    (function () {
+        // début du code isolé
+        var requestAnimId;
+        var socket = io();
+        var player;
+
+        var initialisation = function() {
+            socket.on("Attribution du joueur", (numero)=>{
+                player = numero;
+                console.log(player);
+            })
+            // le code de l'initialisation
+            game.init();
+
+            requestAnimId = window.requestAnimationFrame(main); // premier appel de main au rafraîchissement de la page
+        }
+
+        var main = function() {
+         //   console.log(player);
+            // le code du jeu
+            game.clearLayer(game.playersBallLayer); // appel de la fonction de l'effacement du layer
+            if(player==="playerOne"){
+                game.movePlayer1();
+                socket.emit("player one move", game.playerOne);
+            }
+            if(player==='playerTwo'){
+                game.movePlayer2();
+                socket.emit("player two move", game.playerTwo);
+            }
+            if(player==='playerThree'){
+                game.movePlayer3();
+                socket.emit("player three move", game.playerThree);
+            }
+            if(player==='playerFour') {
+                game.movePlayer4();
+                socket.emit("player four move", game.playerFour);
+            }
+
+            /*
+            game.movePlayers1();//appel de la fonction du mouvement de la raquettes du joueur 1
+
+            game.movePlayers2();//appel de la fonction du mouvement de la raquettes du joueur 2
+
+            game.movePlayers3();//appel de la fonction du mouvement de la raquettes du joueur 3
+
+            game.movePlayers4();//appel de la fonction du mouvement de la raquettes du joueur 4*/
+
+            socket.on("Update position player one",(player)=>{
+                game.playerOne.posY = player.posY;
+            })
+            socket.on("Update position player two",(player)=>{
+                game.playerTwo.posY = player.posY;
+            })
+            socket.on("Update position player three",(player)=>{
+                game.playerThree.posY = player.posY;
+            })
+            socket.on("Update position player four",(player)=>{
+                game.playerFour.posY = player.posY;
+            })
+
+
+            game.displayPlayers();//appel de l'afficahge des joueur pour ne pas être effacé par la fonction d'effacement du layer
+
+            game.moveBall(); // appel de la fonction du mouvement de la balle
+
+            game.collideBallWithPlayersAndAction();//appel de la fonction du rebonds de la balle sur les raquettes
+
+            socket.emit("ball Move", game.ball);
+
+            socket.on("Update position ball", (ball)=>{
+                game.ball.posX = ball.posX;
+                game.ball.posY = ball.posY;
+                game.ball.directionX = ball.directionX;
+                game.ball.directionY = ball.directionY;
+            })
+
+            //game.ai.move(); //appel de la fonction  de l'ia
+
+            requestAnimId = window.requestAnimationFrame(main); // rappel de main au prochain rafraîchissement de la page
+        }
+
+        window.onload = initialisation; // appel de la fonction initialisation au chargement de la page
+
+        window.onkeydown = game.control.onKeyDown; // onKeyDown = à l'appui de la touche
+
+        window.onkeyup = game.control.onKeyUp; // onKeyUp = au relèvement de la touche
+
+        // fin du code isolé
+    })();
+</script>
+</html>
